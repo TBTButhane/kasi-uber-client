@@ -1,0 +1,157 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:jabber/Data/appData.dart';
+import 'package:jabber/auth/help.dart';
+import 'package:jabber/models/address.dart';
+import 'package:jabber/models/allUsers.dart';
+import 'package:jabber/models/directDetails.dart';
+import 'package:jabber/assistance/requestAssistant.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+
+class AssistantMethods {
+  static Future<String> searchCoordinateAddress(
+      Position position, context) async {
+    String placeAdress = "";
+    String st1, st2, st3; //, st4;
+    Uri url = Uri.parse(
+        "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$mapkey");
+    var response = await RequestAssistant.getRequest(url);
+
+    if (response != "failed") {
+      // placeAdress = response["results"][0]["formatted_address"];
+      st1 = response["results"][0]["address_components"][0]["long_name"];
+      st2 = response["results"][0]["address_components"][1]["long_name"];
+      st3 = response["results"][0]["address_components"][3]["long_name"];
+      // //st4 = response["results"][0]["address_components"][0]["long_name"];
+      placeAdress = st1 + " " + st2 + " " + st3; //+ ; //", " + st4;
+
+      Address userPickUpAddress = new Address();
+      userPickUpAddress.latitude = position.latitude;
+      userPickUpAddress.longitude = position.longitude;
+      userPickUpAddress.placeName = placeAdress;
+
+      Provider.of<AppData>(context, listen: false)
+          .updatePickUpLocationAddress(userPickUpAddress);
+    }
+    return placeAdress;
+  }
+
+  static Future<DirectionDetails> obtainPlaceDirectionDetails(
+      LatLng initialPosition, LatLng finalPosition) async {
+    Uri directionUrl = Uri.parse(
+        "https://maps.googleapis.com/maps/api/directions/json?origin=${initialPosition.latitude},${initialPosition.longitude}&destination=${finalPosition.latitude},${finalPosition.longitude}&key=$mapkey");
+    var res = await RequestAssistant.getRequest(directionUrl);
+
+    if (res == "failed") {
+      return null;
+    }
+
+    DirectionDetails directionDetails = DirectionDetails();
+
+    directionDetails.encodedPoints =
+        res["routes"][0]["overview_polyline"]["points"];
+    directionDetails.distanceText =
+        res["routes"][0]["legs"][0]["distance"]["text"];
+    directionDetails.distanceValue =
+        res["routes"][0]["legs"][0]["distance"]["value"];
+
+    directionDetails.durationText =
+        res["routes"][0]["legs"][0]["duration"]["text"];
+    directionDetails.durationValue =
+        res["routes"][0]["legs"][0]["duration"]["value"];
+
+    return directionDetails;
+  }
+
+  static int calculateFare(DirectionDetails directionDetails) {
+    double timeTraveledFare = (directionDetails.durationValue / 60) * 0.2;
+    double distanceTraveledFare =
+        (directionDetails.distanceValue / 1000) * 0.34;
+    double totalFareAmount = timeTraveledFare + distanceTraveledFare;
+
+    //convert to Zar from USD
+
+    double totalLocalAmount = totalFareAmount * 15.03;
+
+    return totalLocalAmount.truncate();
+  }
+
+  static void getCurrentOnLineUserInfo() async {
+    firebaseUser = FirebaseAuth.instance.currentUser;
+    String userId = firebaseUser.uid;
+
+    DatabaseReference reference =
+        FirebaseDatabase.instance.ref().child("users").child(userId);
+
+    final snapshot = await reference.get();
+
+    if (snapshot.exists) {
+      // print('Somedata found: ${snapshot.value}');
+      final data = new Map<String, dynamic>.from(snapshot.value);
+      userCurrentInfo = Users.fromSnapshot(data);
+
+      // Map map = snapshot.value;
+      // userCurrentInfo = Users.fromSnapshot(map);
+      // print("this what i got:$userCurrentInfo");
+      print("Current online user name: ${userCurrentInfo.name}");
+    } else {
+      print('No data available');
+    }
+  }
+
+  // static void getCurrentOnLineUserInfo() async {
+  //   firebaseUser = FirebaseAuth.instance.currentUser;
+  //   String userId = firebaseUser.uid;
+
+  //   DatabaseReference reference =
+  //       FirebaseDatabase.instance.ref().child("users").child(userId);
+
+  //   reference.once().then((DatabaseEvent dataSnapshot) {
+  //     if (dataSnapshot.snapshot != null) {
+  //       userCurrentInfo = Users.fromSnapshot(dataSnapshot);
+  //     }
+  //   });
+  // }
+
+  static double createRandomNumber(int num) {
+    var random = Random();
+    int radNumber = random.nextInt(num);
+    return radNumber.toDouble();
+  }
+
+  static sendNotificationToDriver(
+      String token, context, String ride_request_id) async {
+    var destination =
+        Provider.of<AppData>(context, listen: false).dropOffLocation;
+    Map<String, String> headerMap = {
+      'Content-type': 'application/json',
+      'Authorization': serverToken,
+    };
+
+    Map notificationMap = {
+      'body': 'DropOff Address: ${destination.placeName}',
+      'tittle': 'New Ride Request',
+    };
+    Map dataMap = {
+      'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+      'id': '1',
+      'status': 'done',
+      'ride_request_id': ride_request_id,
+    };
+    Map sendNotificationMap = {
+      "notification": notificationMap,
+      "data": dataMap,
+      "priority": "high",
+      "to": token,
+    };
+
+    var res = await http.post(Uri.parse("https://fcm.googleapis.com/fcm/send"),
+        headers: headerMap, body: jsonEncode(sendNotificationMap));
+  }
+}

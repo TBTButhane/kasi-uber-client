@@ -1,0 +1,85 @@
+{
+  "project_info": {
+    "project_number": "104915287371",
+    "firebase_url": "https://jabber-taxi-fe719-default-rtdb.firebaseio.com",
+    "project_id": "jabber-taxi-fe719",
+    "storage_bucket": "jabber-taxi-fe719.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:104915287371:android:a474690b3f32fd2269bcce",
+        "android_client_info": {
+          "package_name": "com.example.jabber"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "104915287371-bhsv2u1712narvo9gmehuo3vkau9vdjk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jabber",
+            "certificate_hash": "70640a731181ef2420b85d71d0b9ed41d7977085"
+          }
+        },
+        {
+          "client_id": "104915287371-si6gaovhhe93m61jq5l855c9ishajmf7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSn3l_Koi6MY3pn4chY28dcrjiugC8xcs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "104915287371-si6gaovhhe93m61jq5l855c9ishajmf7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:104915287371:android:bdc5ec9b4901db6069bcce",
+        "android_client_info": {
+          "package_name": "com.example.jabber_driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "104915287371-2hkggq6fihpbf6veeg2i190ff49vj1ko.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jabber_driver",
+            "certificate_hash": "70640a731181ef2420b85d71d0b9ed41d7977085"
+          }
+        },
+        {
+          "client_id": "104915287371-si6gaovhhe93m61jq5l855c9ishajmf7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSn3l_Koi6MY3pn4chY28dcrjiugC8xcs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "104915287371-si6gaovhhe93m61jq5l855c9ishajmf7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
